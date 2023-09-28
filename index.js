@@ -43,7 +43,7 @@ const selectionOptions = (answers) => {
             console.log("Exiting program!");
             process.exit(0);
         default:
-            console.log("Something went wrong!");
+            console.log("Outside switch statment options!");
             process.exit(0);
     }
 }
@@ -81,6 +81,71 @@ const viewEmployees = () => {
         init();
     })
 };
+
+const addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: "text",
+            message: "Provide a name for the new department:",
+            name: "department_name"
+        }
+    ])
+    .then((answer => {
+        db.query("INSERT INTO departments SET ? ", answer, (err, res) => {
+            err ? console.error(err) : console.log(`${answer.department_name} department has been added.`)
+            viewDepartments();
+            init();
+        });
+    }))
+};
+
+const addRole = () => {
+    db.query("SELECT * FROM departments", (err, res) => {
+        if (err) {
+            console.error(err);
+        }
+        const departments = res.map(resInfo => resInfo.department_name);
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "Provide a name for the new role:",
+                name: "title"
+            },
+            {
+                type: "input",
+                message: "Provide a salary for the new role:",
+                name: "salary"
+            },
+            {
+                type: "list",
+                message: "Provide a department for the new role:",
+                choices: departments,
+                name: "department_name"
+            }
+        ])
+        .then((answer => {
+            const query = `SELECT id
+                           FROM departments
+                           WHERE department_name = ?`
+            db.query(query, answer.department_name, (err, res) => {
+                if (err) {
+                    console.error(err);
+                }
+                [{ id }] = res;
+                const newRole = {
+                    title: answer.title,
+                    salary: answer.salary,
+                    department_id: id
+                }
+                db.query("INSERT INTO roles SET ? ", newRole, (err, res) => {
+                    err ? console.error(err) : console.log(`${answer.title} role has been added.`)
+                    viewRoles();
+                    init();
+                });
+            })
+        }))
+    });
+}
 
 const init = () => {
     inquirer
