@@ -11,10 +11,10 @@ VALUES              ("CEO", 500000, 1),
                     ("Manager", 105000, 1),
                     ("HR Manager", 70000, 2),
                     ("HR Representative", 50000, 2),
-                    ("Lead Developer", 90000, 3),
-                    ("Developer", 80000, 3),
-                    ("Lead Developer", 100000, 4),
-                    ("Developer", 90000, 4),
+                    ("Front-End Lead Developer", 90000, 3),
+                    ("Front-End Developer", 80000, 3),
+                    ("Back-End Lead Developer", 100000, 4),
+                    ("Back-End Developer", 90000, 4),
                     ("Gaurd", 50000, 5);
 
 INSERT INTO employees   (first_name, last_name, roles_id, manager_id)

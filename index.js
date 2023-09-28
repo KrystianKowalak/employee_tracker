@@ -14,7 +14,7 @@ const startPrompt = [{
               "Exit",
     ],
     name: "selection"
-}]
+}];
 
 const selectionOptions = (answers) => {
     switch (answers.selection) {
@@ -46,7 +46,7 @@ const selectionOptions = (answers) => {
             console.log("Outside switch statment options!");
             process.exit(0);
     }
-}
+};
 
 const viewDepartments = () => {
     db.query("SELECT * FROM departments", (err, res) => {
@@ -63,7 +63,7 @@ const viewRoles = () => {
     db.query(query, (err, res) => {
       err ? console.error(err) : console.table(res);
       init();
-    })
+    });
 };
 
 const viewEmployees = () => {
@@ -79,7 +79,7 @@ const viewEmployees = () => {
     db.query(query, (err, res) => {
         err ? console.error(err) : console.table(res);
         init();
-    })
+    });
 };
 
 const addDepartment = () => {
@@ -92,18 +92,18 @@ const addDepartment = () => {
     ])
     .then((answer => {
         db.query("INSERT INTO departments SET ? ", answer, (err, res) => {
-            err ? console.error(err) : console.log(`${answer.department_name} department has been added.`)
+            err ? console.error(err) : console.log(`${answer.department_name} department has been added.`);
             viewDepartments();
             init();
         });
-    }))
+    }));
 };
 
 const addRole = () => {
     db.query("SELECT * FROM departments", (err, res) => {
         if (err) {
             console.error(err);
-        }
+        };
         const departments = res.map(resInfo => resInfo.department_name);
         inquirer.prompt([
             {
@@ -118,7 +118,7 @@ const addRole = () => {
             },
             {
                 type: "list",
-                message: "Provide a department for the new role:",
+                message: "Select a department for the new role:",
                 choices: departments,
                 name: "department_name"
             }
@@ -126,26 +126,99 @@ const addRole = () => {
         .then((answer => {
             const query = `SELECT id
                            FROM departments
-                           WHERE department_name = ?`
+                           WHERE department_name = ?`;
             db.query(query, answer.department_name, (err, res) => {
                 if (err) {
                     console.error(err);
-                }
+                };
                 [{ id }] = res;
                 const newRole = {
                     title: answer.title,
                     salary: answer.salary,
                     department_id: id
-                }
+                };
                 db.query("INSERT INTO roles SET ? ", newRole, (err, res) => {
-                    err ? console.error(err) : console.log(`${answer.title} role has been added.`)
+                    err ? console.error(err) : console.log(`${answer.title} role has been added.`);
                     viewRoles();
                     init();
                 });
-            })
-        }))
+            });
+        }));
     });
-}
+};
+
+const addEmployee = () => {
+    db.query("SELECT * FROM employees", (err, res) => {
+        if (err) {
+            console.error(err);
+        };
+        const employees = res.map(resInfo => resInfo.first_name);
+        db.query("SELECT * FROM roles", (err, res) => {
+            if (err) {
+                console.error(err);
+            };
+            const roles = res.map(resInfo => resInfo.title);
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "Provide a first name for the new employee:",
+                    name: "first_name"
+                },
+                {
+                    type: "input",
+                    message: "Provide a last name for the new employee:",
+                    name: "last_name"
+                },
+                {
+                    type: "list",
+                    message: "Select a role for the new employee:",
+                    choices: roles,
+                    name: "title"
+                },
+                {
+                    type: "list",
+                    message: "Select a manager for the new employee:",
+                    choices: employees,
+                    name: "manager"
+                }
+            ])
+            .then((answer => {
+                console.log(answer);
+                const roleQuery = `SELECT id
+                                   FROM roles
+                                   WHERE title = ?`;
+                db.query(roleQuery, answer.title, (err, res) => {
+                    if (err) {
+                        console.error(err);
+                    };
+                    [{ id }] = res;
+                    const roles_id = id;
+                    const employeeQuery = `SELECT id
+                                           FROM employees
+                                           WHERE first_name = ?`;
+                    db.query(employeeQuery, answer.manager, (err, res) => {
+                        if (err) {
+                            console.error(err);
+                        };
+                        [{ id }] = res;
+                        const manager_id = id;
+                        const newEmployees = {
+                            first_name: answer.first_name,
+                            last_name: answer.last_name,
+                            roles_id: roles_id,
+                            manager_id: manager_id
+                        };
+                        db.query("INSERT INTO employees SET ? ", newEmployees, (err, res) => {
+                            err ? console.error(err) : console.log(`${answer.first_name} employee has been added.`)
+                            viewEmployees();
+                            init();
+                        });
+                    });
+                });
+            }));
+        });
+    });
+};
 
 const init = () => {
     inquirer
