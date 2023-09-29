@@ -93,7 +93,6 @@ const addDepartment = () => {
     .then((answer => {
         db.query("INSERT INTO departments SET ? ", answer, (err, res) => {
             err ? console.error(err) : console.log(`${answer.department_name} department has been added.`);
-            viewDepartments();
             init();
         });
     }));
@@ -139,7 +138,6 @@ const addRole = () => {
                 };
                 db.query("INSERT INTO roles SET ? ", newRole, (err, res) => {
                     err ? console.error(err) : console.log(`${answer.title} role has been added.`);
-                    viewRoles();
                     init();
                 });
             });
@@ -183,7 +181,6 @@ const addEmployee = () => {
                 }
             ])
             .then((answer => {
-                console.log(answer);
                 const roleQuery = `SELECT id
                                    FROM roles
                                    WHERE title = ?`;
@@ -210,7 +207,6 @@ const addEmployee = () => {
                         };
                         db.query("INSERT INTO employees SET ? ", newEmployees, (err, res) => {
                             err ? console.error(err) : console.log(`${answer.first_name} employee has been added.`)
-                            viewEmployees();
                             init();
                         });
                     });
@@ -220,12 +216,48 @@ const addEmployee = () => {
     });
 };
 
+const updateEmployee = () => {
+    db.query("SELECT * FROM employees", (err, res) => {
+        if (err) {
+            console.error(err);
+        };
+        const employees = res.map(resInfo => resInfo.first_name);
+        db.query("SELECT * FROM roles", (err, res) => {
+            if (err) {
+                console.error(err);
+            };
+            const roles = res.map(resInfo => resInfo.title);
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Select an employee you wish to update:",
+                    choices: employees,
+                    name: "first_name"
+                },
+                {
+                    type: "list",
+                    message: "Select a new role for the employee:",
+                    choices: roles,
+                    name: "role"
+                }
+            ])
+            .then((answer => {
+                const query = `UPDATE employees
+                               SET roles_id = (SELECT id FROM roles WHERE title = ?)
+                               WHERE first_name = ?`;
+                db.query(query, [answer.role, answer.first_name], (err, res) => {
+                err ? console.error(err) : console.log(`${answer.first_name} has been updated`);
+                viewEmployees();
+                })
+            }));
+        });
+    });    
+}
+
 const init = () => {
-    inquirer
-        .prompt(startPrompt)
-        .then(function (answers) {
-            selectionOptions(answers)
-        })
+    inquirer.prompt(startPrompt).then(function (answers) {
+        selectionOptions(answers)
+    })
 }
   
 init();
