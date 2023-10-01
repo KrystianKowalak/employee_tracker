@@ -5,7 +5,7 @@ https://github.com/KrystianKowalak/employee_tracker/assets/63071475/7a867652-051
   An node application for keeping track and managing your eomployees, managers, and their roles for your company.
 
   ## Link
-  https://ancient-gorge-15369-ed41dc4e01b3.herokuapp.com/
+  N/A
 
   ## Table of Contents
   - [Installation](#installation)
